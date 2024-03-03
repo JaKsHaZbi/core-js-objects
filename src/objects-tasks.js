@@ -370,44 +370,75 @@ const cssSelectorBuilder = {
   result: '',
 
   element(value) {
-    this.result += value;
-    return this;
+    this.error(1);
+    const obj = Object.create(cssSelectorBuilder);
+    obj.errorId = 1;
+    obj.result = this.result + value;
+    return obj;
   },
 
   id(value) {
-    this.result += `#${value}`;
-    return this;
+    this.error(2);
+    const obj = Object.create(cssSelectorBuilder);
+    obj.errorId = 2;
+    obj.result = `${this.result}#${value}`;
+    return obj;
   },
 
   class(value) {
-    this.result += `.${value}`;
-    return this;
+    this.error(3);
+    const obj = Object.create(cssSelectorBuilder);
+    obj.errorId = 3;
+    obj.result = `${this.result}.${value}`;
+    return obj;
   },
 
   attr(value) {
-    this.result += `[${value}]`;
-    return this;
+    this.error(4);
+    const obj = Object.create(cssSelectorBuilder);
+    obj.errorId = 4;
+    obj.result = `${this.result}[${value}]`;
+    return obj;
   },
 
   pseudoClass(value) {
-    this.result += `:${value}`;
-    return this;
+    this.error(5);
+    const obj = Object.create(cssSelectorBuilder);
+    obj.errorId = 5;
+    obj.result = `${this.result}:${value}`;
+    return obj;
   },
 
   pseudoElement(value) {
-    this.result += `::${value}`;
-    return this;
+    this.error(6);
+    const obj = Object.create(cssSelectorBuilder);
+    obj.errorId = 6;
+    obj.result = `${this.result}::${value}`;
+    return obj;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
-    // return this;
+  combine(selector1, combinator, selector2) {
+    const obj = Object.create(cssSelectorBuilder);
+    obj.result = `${selector1.result} ${combinator} ${selector2.result}`;
+    return obj;
   },
 
   stringify() {
-    const FinalResult = this.result;
-    this.result = '';
-    return FinalResult;
+    return this.result;
+  },
+
+  error(errorId) {
+    if (this.errorId > errorId)
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    if (
+      this.errorId === errorId &&
+      (errorId === 1 || errorId === 2 || errorId === 6)
+    )
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
   },
 };
 
